@@ -1,0 +1,38 @@
+# Maven
+/target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# NetBeans
+/nbproject/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Gradle
+.gradle/
+/build/
+
+# Java
+*.class
+
+# Secrets
+*.env

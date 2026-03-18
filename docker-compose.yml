@@ -1,0 +1,73 @@
+version: '3.9'
+
+services:
+
+  # ─── Base de datos PostgreSQL ──────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: shopsmart-postgres
+    environment:
+      POSTGRES_DB: shopsmart_usuarios
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopsmart-net
+
+  # ─── Microservicio de Usuarios ─────────────────────────────────
+  usuarios-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shopsmart-usuarios
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      JWT_SECRET: ShopSmartSecretKey2024SuperSeguraParaProduccion!
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shopsmart_usuarios
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - shopsmart-net
+    restart: unless-stopped
+
+  # ─── pgAdmin (interfaz visual para PostgreSQL) ─────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: shopsmart-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@shopsmart.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - shopsmart-net
+    profiles:
+      - tools  # Iniciar solo con: docker-compose --profile tools up
+
+volumes:
+  postgres_data:
+
+networks:
+  shopsmart-net:
+    driver: bridge

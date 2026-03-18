@@ -70,4 +70,5 @@ volumes:
 
 networks:
   shopsmart-net:
+    name: shopsmart-net
     driver: bridge

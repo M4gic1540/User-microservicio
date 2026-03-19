@@ -1,47 +1,62 @@
 server:
-  port: 8081
+  # Puerto HTTP del microservicio
+  port: ${SERVER_PORT:8081}
 
 spring:
+  # Nombre del servicio en el ecosistema
   application:
     name: usuarios-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/shopsmart_usuarios
+    # URL de conexión a PostgreSQL
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopsmart_usuarios}
+    # Credenciales de base de datos
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
+      # Pool de conexiones
       maximum-pool-size: 10
       minimum-idle: 5
       connection-timeout: 30000
 
   jpa:
+    # Estrategia de generación/actualización del schema
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    # Mostrar SQL en logs
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
+        # Dialecto y formato SQL
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
   security:
-    enabled: true
+    # Habilitar/deshabilitar seguridad Spring
+    enabled: ${SECURITY_ENABLED:true}
 
 # JWT Configuration
 jwt:
+  # Secreto para firmar tokens
   secret: ${JWT_SECRET:ShopSmartSecretKey2024SuperSeguraParaProduccion!}
-  expiration: 86400000        # 24 horas en ms
-  refresh-expiration: 604800000  # 7 días en ms
+  # Expiración token access (ms)
+  expiration: ${JWT_EXPIRATION_MS:86400000}        # 24 horas en ms
+  # Expiración token refresh (ms)
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION_MS:604800000}  # 7 días en ms
 
 # Swagger / OpenAPI
 springdoc:
   api-docs:
+    # Ruta del JSON OpenAPI
     path: /api-docs
   swagger-ui:
+    # Ruta del Swagger UI
     path: /swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
   info:
+    # Metadatos de la API
     title: ShopSmart - Servicio de Usuarios
     description: API REST para gestión de usuarios, autenticación y personalización
     version: 1.0.0
@@ -51,13 +66,16 @@ management:
   endpoints:
     web:
       exposure:
+        # Endpoints públicos de Actuator
         include: health, info, metrics
   endpoint:
     health:
+      # Mostrar detalles del estado
       show-details: always
 
 # Logging
 logging:
   level:
-    com.shopsmart: DEBUG
-    org.springframework.security: INFO
+    # Nivel de logs para la app y seguridad
+    com.shopsmart: ${LOG_LEVEL_APP:DEBUG}
+    org.springframework.security: ${LOG_LEVEL_SECURITY:INFO}

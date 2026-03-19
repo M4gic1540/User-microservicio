@@ -1,22 +1,19 @@
 package com.shopsmart.usuarios.controller;
 
-import com.shopsmart.usuarios.dto.DireccionDTO;
-import com.shopsmart.usuarios.dto.PreferenciaDTO;
 import com.shopsmart.usuarios.dto.UsuarioDTO;
 import com.shopsmart.usuarios.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Endpoints para que el usuario gestione su perfil, direcciones y preferencias.
@@ -25,87 +22,44 @@ import java.util.List;
 @RequestMapping("/api/v1/usuarios")
 @RequiredArgsConstructor
 @Tag(name = "Usuarios", description = "Gestión de perfil, direcciones y preferencias")
-@SecurityRequirement(name = "bearerAuth")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    // ─── Perfil ──────────────────────────────────────────────────
+    // ─── Listado público ─────────────────────────────────────────
 
-    @GetMapping("/me")
-    @Operation(summary = "Obtener mi perfil", description = "Retorna el perfil del usuario autenticado")
-    public ResponseEntity<UsuarioDTO.UsuarioResponse> miPerfil(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        // Obtenemos el usuario por email desde el token
-        return ResponseEntity.ok(
-            usuarioService.buscarPorEmail(userDetails.getUsername())
+    @GetMapping
+    @Operation(summary = "Listar usuarios públicos", description = "Retorna usuarios activos sin autenticación")
+    public ResponseEntity<Page<UsuarioDTO.UsuarioResponse>> listarPublico(
+            @PageableDefault(size = 20, sort = "fechaCreacion") Pageable pageable) {
+        Pageable safePageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.by("fechaCreacion").descending()
         );
+        return ResponseEntity.ok(usuarioService.listarUsuarios(safePageable));
     }
 
-    @PutMapping("/me")
-    @Operation(summary = "Actualizar mi perfil")
-    public ResponseEntity<UsuarioDTO.UsuarioResponse> actualizarPerfil(
-            @AuthenticationPrincipal UserDetails userDetails,
+    @PostMapping
+    @Operation(summary = "Registrar usuario público", description = "Crea un usuario sin JWT ni login")
+    public ResponseEntity<UsuarioDTO.UsuarioResponse> registrarPublico(
+            @Valid @RequestBody UsuarioDTO.RegistroRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(usuarioService.registrarPublico(request));
+    }
+
+    @PutMapping({"/{id}", "/{id}/"})
+    @Operation(summary = "Actualizar usuario por ID", description = "Actualiza datos básicos del usuario")
+    public ResponseEntity<UsuarioDTO.UsuarioResponse> actualizarPorId(
+            @PathVariable Long id,
             @Valid @RequestBody UsuarioDTO.ActualizarPerfilRequest request) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
         return ResponseEntity.ok(usuarioService.actualizarPerfil(id, request));
     }
 
-    @DeleteMapping("/me")
-    @Operation(summary = "Desactivar mi cuenta")
+    @DeleteMapping({"/{id}", "/{id}/"})
+    @Operation(summary = "Desactivar usuario por ID", description = "Desactiva el usuario por su ID")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void desactivarCuenta(@AuthenticationPrincipal UserDetails userDetails) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
+    public void desactivarPorId(@PathVariable Long id) {
         usuarioService.desactivarUsuario(id);
-    }
-
-    // ─── Direcciones ──────────────────────────────────────────────
-
-    @GetMapping("/me/direcciones")
-    @Operation(summary = "Listar mis direcciones de envío")
-    public ResponseEntity<List<DireccionDTO.DireccionResponse>> listarDirecciones(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
-        return ResponseEntity.ok(usuarioService.obtenerDirecciones(id));
-    }
-
-    @PostMapping("/me/direcciones")
-    @Operation(summary = "Agregar dirección de envío")
-    public ResponseEntity<DireccionDTO.DireccionResponse> agregarDireccion(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody DireccionDTO.DireccionRequest request) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(usuarioService.agregarDireccion(id, request));
-    }
-
-    @DeleteMapping("/me/direcciones/{direccionId}")
-    @Operation(summary = "Eliminar dirección de envío")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminarDireccion(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "ID de la dirección a eliminar")
-            @PathVariable Long direccionId) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
-        usuarioService.eliminarDireccion(id, direccionId);
-    }
-
-    // ─── Preferencias ─────────────────────────────────────────────
-
-    @GetMapping("/me/preferencias")
-    @Operation(summary = "Obtener mis preferencias de personalización")
-    public ResponseEntity<PreferenciaDTO.PreferenciaResponse> obtenerPreferencias(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
-        return ResponseEntity.ok(usuarioService.obtenerPreferencias(id));
-    }
-
-    @PutMapping("/me/preferencias")
-    @Operation(summary = "Actualizar mis preferencias")
-    public ResponseEntity<PreferenciaDTO.PreferenciaResponse> actualizarPreferencias(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody PreferenciaDTO.PreferenciaRequest request) {
-        Long id = usuarioService.obtenerIdPorEmail(userDetails.getUsername());
-        return ResponseEntity.ok(usuarioService.actualizarPreferencias(id, request));
     }
 }

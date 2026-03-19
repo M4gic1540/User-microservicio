@@ -83,18 +83,10 @@ DB_USER=postgres DB_PASSWORD=postgres123 ./mvnw spring-boot:run
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| POST | `/api/v1/auth/registro` | Crear cuenta nueva | Pública |
-| POST | `/api/v1/auth/login` | Obtener tokens JWT | Pública |
-| GET | `/api/v1/usuarios/me` | Ver mi perfil | JWT |
-| PUT | `/api/v1/usuarios/me` | Actualizar perfil | JWT |
-| DELETE | `/api/v1/usuarios/me` | Desactivar cuenta | JWT |
-| GET | `/api/v1/usuarios/me/direcciones` | Mis direcciones | JWT |
-| POST | `/api/v1/usuarios/me/direcciones` | Agregar dirección | JWT |
-| DELETE | `/api/v1/usuarios/me/direcciones/{id}` | Eliminar dirección | JWT |
-| GET | `/api/v1/usuarios/me/preferencias` | Mis preferencias | JWT |
-| PUT | `/api/v1/usuarios/me/preferencias` | Actualizar preferencias | JWT |
-| GET | `/api/v1/admin/usuarios` | Listar usuarios | ADMIN |
-| GET | `/api/v1/admin/usuarios/buscar?q=` | Buscar usuarios | ADMIN |
+| GET | `/api/v1/usuarios` | Listar usuarios activos (paginado) | Pública |
+| POST | `/api/v1/usuarios` | Crear usuario público | Pública |
+| PUT | `/api/v1/usuarios/{id}` | Actualizar usuario por ID | Pública |
+| DELETE | `/api/v1/usuarios/{id}` | Desactivar usuario por ID | Pública |
 
 ---
 
@@ -102,21 +94,37 @@ DB_USER=postgres DB_PASSWORD=postgres123 ./mvnw spring-boot:run
 
 Disponible en: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
-Para probar endpoints protegidos:
-1. Llama a `POST /api/v1/auth/login`
-2. Copia el `accessToken` de la respuesta
-3. En Swagger, haz clic en **Authorize** → pega el token
-
 ---
 
 ## Variables de entorno
 
 | Variable | Descripción | Default |
 |----------|-------------|---------|
+| `SERVER_PORT` | Puerto del servicio | `8081` |
+| `SPRING_DATASOURCE_URL` | URL de conexión | `jdbc:postgresql://localhost:5432/shopsmart_usuarios` |
 | `DB_USER` | Usuario PostgreSQL | `postgres` |
 | `DB_PASSWORD` | Contraseña PostgreSQL | `postgres` |
+| `JPA_DDL_AUTO` | Estrategia ddl-auto | `update` |
+| `JPA_SHOW_SQL` | Mostrar SQL | `false` |
+| `SECURITY_ENABLED` | Habilitar seguridad | `true` |
 | `JWT_SECRET` | Secreto para firmar JWT | ver application.yml |
-| `SPRING_DATASOURCE_URL` | URL de conexión | `jdbc:postgresql://localhost:5432/shopsmart_usuarios` |
+| `JWT_EXPIRATION_MS` | Expiración JWT (ms) | `86400000` |
+| `JWT_REFRESH_EXPIRATION_MS` | Expiración refresh (ms) | `604800000` |
+| `LOG_LEVEL_APP` | Log level app | `DEBUG` |
+| `LOG_LEVEL_SECURITY` | Log level security | `INFO` |
+
+Ejemplo en Docker Compose:
+
+```yaml
+services:
+    usuarios-service:
+        environment:
+            SERVER_PORT: 8081
+            SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shopsmart_usuarios
+            DB_USER: postgres
+            DB_PASSWORD: postgres123
+            JWT_SECRET: ShopSmartSecretKey2024SuperSeguraParaProduccion!
+```
 
 ---
 

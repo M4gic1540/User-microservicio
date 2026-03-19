@@ -73,6 +73,31 @@ public class UsuarioService {
         return generarAuthResponse(usuario);
     }
 
+    @Transactional
+    public UsuarioDTO.UsuarioResponse registrarPublico(UsuarioDTO.RegistroRequest request) {
+        if (usuarioRepo.existsByEmail(request.getEmail())) {
+            throw new ShopSmartException.EmailYaRegistrado(request.getEmail());
+        }
+
+        Usuario usuario = Usuario.builder()
+            .nombre(request.getNombre())
+            .apellido(request.getApellido())
+            .email(request.getEmail().toLowerCase().trim())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .telefono(request.getTelefono())
+            .build();
+
+        PreferenciaUsuario preferencias = PreferenciaUsuario.builder()
+            .usuario(usuario)
+            .build();
+        usuario.setPreferencias(preferencias);
+
+        usuarioRepo.save(usuario);
+        log.info("Nuevo usuario registrado (publico): {}", usuario.getEmail());
+
+        return mapearUsuario(usuario);
+    }
+
     // ─── Login ────────────────────────────────────────────────────
 
     @Transactional

@@ -29,37 +29,71 @@ public class UsuarioController {
     // ─── Listado público ─────────────────────────────────────────
 
     @GetMapping
-    @Operation(summary = "Listar usuarios públicos", description = "Retorna usuarios activos sin autenticación")
-    public ResponseEntity<Page<UsuarioDTO.UsuarioResponse>> listarPublico(
+    @Operation(
+        summary = "Listar usuarios públicos",
+        description = "Retorna usuarios activos sin autenticación",
+        operationId = "01_get_usuarios"
+    )
+    public ResponseEntity<java.util.Map<String, Object>> listarPublico(
             @PageableDefault(size = 20, sort = "fechaCreacion") Pageable pageable) {
         Pageable safePageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
             Sort.by("fechaCreacion").descending()
         );
-        return ResponseEntity.ok(usuarioService.listarUsuarios(safePageable));
+        Page<UsuarioDTO.UsuarioResponse> usuarios = usuarioService.listarUsuarios(safePageable);
+        return ResponseEntity.ok(java.util.Map.of(
+            "codigo", "USUARIOS_LISTADOS",
+            "mensaje", "Usuarios listados correctamente",
+            "data", usuarios
+        ));
     }
 
     @PostMapping
-    @Operation(summary = "Registrar usuario público", description = "Crea un usuario sin JWT ni login")
-    public ResponseEntity<UsuarioDTO.UsuarioResponse> registrarPublico(
+    @Operation(
+        summary = "Registrar usuario público",
+        description = "Crea un usuario sin JWT ni login",
+        operationId = "02_post_usuarios"
+    )
+    public ResponseEntity<java.util.Map<String, Object>> registrarPublico(
             @Valid @RequestBody UsuarioDTO.RegistroRequest request) {
+        UsuarioDTO.UsuarioResponse usuario = usuarioService.registrarPublico(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(usuarioService.registrarPublico(request));
+                .body(java.util.Map.of(
+                    "codigo", "USUARIO_CREADO",
+                    "mensaje", "Usuario creado",
+                    "data", usuario
+                ));
     }
 
-    @PutMapping({"/{id}", "/{id}/"})
-    @Operation(summary = "Actualizar usuario por ID", description = "Actualiza datos básicos del usuario")
-    public ResponseEntity<UsuarioDTO.UsuarioResponse> actualizarPorId(
+    @PutMapping("/{id}")
+    @Operation(
+        summary = "Actualizar usuario por ID",
+        description = "Actualiza datos básicos del usuario",
+        operationId = "03_put_usuarios_id"
+    )
+    public ResponseEntity<java.util.Map<String, Object>> actualizarPorId(
             @PathVariable Long id,
             @Valid @RequestBody UsuarioDTO.ActualizarPerfilRequest request) {
-        return ResponseEntity.ok(usuarioService.actualizarPerfil(id, request));
+        UsuarioDTO.UsuarioResponse usuario = usuarioService.actualizarPerfil(id, request);
+        return ResponseEntity.ok(java.util.Map.of(
+            "codigo", "USUARIO_ACTUALIZADO",
+            "mensaje", "Usuario actualizado correctamente",
+            "data", usuario
+        ));
     }
 
-    @DeleteMapping({"/{id}", "/{id}/"})
-    @Operation(summary = "Desactivar usuario por ID", description = "Desactiva el usuario por su ID")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void desactivarPorId(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    @Operation(
+        summary = "Desactivar usuario por ID",
+        description = "Desactiva el usuario por su ID",
+        operationId = "04_delete_usuarios_id"
+    )
+    public ResponseEntity<java.util.Map<String, String>> desactivarPorId(@PathVariable Long id) {
         usuarioService.desactivarUsuario(id);
+        return ResponseEntity.ok(java.util.Map.of(
+            "codigo", "USUARIO_DESACTIVADO",
+            "mensaje", "Usuario desactivado correctamente"
+        ));
     }
 }

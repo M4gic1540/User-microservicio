@@ -75,6 +75,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDTO.UsuarioResponse registrarPublico(UsuarioDTO.RegistroRequest request) {
+        // Registro sin JWT: retorna datos del usuario sin tokens.
         if (usuarioRepo.existsByEmail(request.getEmail())) {
             throw new ShopSmartException.EmailYaRegistrado(request.getEmail());
         }
@@ -251,6 +252,7 @@ public class UsuarioService {
     // ─── Helpers de mapeo ─────────────────────────────────────────
 
     private UsuarioDTO.AuthResponse generarAuthResponse(Usuario usuario) {
+        // Construye la respuesta de autenticacion con tokens JWT.
         UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
         String accessToken = jwtUtil.generarToken(userDetails);
         String refreshToken = jwtUtil.generarRefreshToken(userDetails);
@@ -264,6 +266,7 @@ public class UsuarioService {
     }
 
     public UsuarioDTO.UsuarioResponse mapearUsuario(Usuario u) {
+        // Mapeo de entidad a DTO expuesto por la API.
         return UsuarioDTO.UsuarioResponse.builder()
             .id(u.getId())
             .nombre(u.getNombre())
@@ -281,6 +284,7 @@ public class UsuarioService {
     }
 
     private DireccionDTO.DireccionResponse mapearDireccion(DireccionEnvio d) {
+        // Mapeo simple de direccion de envio.
         return DireccionDTO.DireccionResponse.builder()
             .id(d.getId())
             .calle(d.getCalle())
@@ -294,6 +298,7 @@ public class UsuarioService {
     }
 
     private PreferenciaDTO.PreferenciaResponse mapearPreferencias(PreferenciaUsuario p) {
+        // Convierte CSV de categorias a lista para la respuesta.
         List<String> categorias = (p.getCategoriasFavoritas() != null && !p.getCategoriasFavoritas().isBlank())
             ? Arrays.asList(p.getCategoriasFavoritas().split(","))
             : List.of();

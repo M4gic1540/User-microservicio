@@ -20,19 +20,21 @@ import java.util.Set;
 @Builder
 public class PreferenciaUsuario {
 
+    // Identificador de preferencias.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Usuario al que pertenecen las preferencias.
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    // Categorías favoritas (almacenadas como CSV)
+    // Categorias favoritas (almacenadas como CSV).
     @Column(name = "categorias_favoritas", length = 500)
     private String categoriasFavoritas;
 
-    // Notificaciones
+    // Preferencias de notificaciones.
     @Column(name = "notif_email")
     @Builder.Default
     private Boolean notifEmail = true;
@@ -45,7 +47,7 @@ public class PreferenciaUsuario {
     @Builder.Default
     private Boolean notifPromociones = true;
 
-    // Idioma y moneda preferida
+    // Idioma y moneda preferida.
     @Column(length = 10)
     @Builder.Default
     private String idioma = "es";

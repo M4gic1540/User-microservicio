@@ -24,25 +24,31 @@ import java.util.List;
 @Builder
 public class Usuario {
 
+    // Identificador unico del usuario.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Datos personales basicos.
     @Column(nullable = false, length = 100)
     private String nombre;
 
     @Column(nullable = false, length = 100)
     private String apellido;
 
+    // Email usado como identificador de acceso.
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
+    // Hash de contraseña.
     @Column(nullable = false)
     private String password;
 
+    // Datos de contacto opcionales.
     @Column(length = 20)
     private String telefono;
 
+    // Rol y estado de la cuenta.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -52,6 +58,7 @@ public class Usuario {
     @Builder.Default
     private Boolean activo = true;
 
+    // Auditoria de uso y creacion.
     @Column(name = "ultimo_acceso")
     private LocalDateTime ultimoAcceso;
 
@@ -63,10 +70,12 @@ public class Usuario {
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 
+    // Direcciones asociadas al usuario.
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<DireccionEnvio> direcciones = new ArrayList<>();
 
+    // Preferencias de personalizacion.
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PreferenciaUsuario preferencias;
 

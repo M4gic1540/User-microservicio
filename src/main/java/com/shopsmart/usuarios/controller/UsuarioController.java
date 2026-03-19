@@ -36,12 +36,14 @@ public class UsuarioController {
     )
     public ResponseEntity<java.util.Map<String, Object>> listarPublico(
             @PageableDefault(size = 20, sort = "fechaCreacion") Pageable pageable) {
+        // Forzar orden y paginado seguro para la lista pública.
         Pageable safePageable = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
             Sort.by("fechaCreacion").descending()
         );
         Page<UsuarioDTO.UsuarioResponse> usuarios = usuarioService.listarUsuarios(safePageable);
+        // Respuesta estandar con codigo, mensaje y datos.
         return ResponseEntity.ok(java.util.Map.of(
             "codigo", "USUARIOS_LISTADOS",
             "mensaje", "Usuarios listados correctamente",

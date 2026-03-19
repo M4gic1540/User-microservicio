@@ -15,14 +15,17 @@ import lombok.*;
 @Builder
 public class DireccionEnvio {
 
+    // Identificador de la direccion.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Usuario propietario de la direccion.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    // Datos de ubicacion.
     @Column(nullable = false, length = 200)
     private String calle;
 
@@ -38,10 +41,12 @@ public class DireccionEnvio {
     @Column(nullable = false, length = 100)
     private String pais;
 
+    // Marca de direccion principal.
     @Column(name = "es_principal")
     @Builder.Default
     private Boolean esPrincipal = false;
 
+    // Alias opcional (ej. Casa, Trabajo).
     @Column(length = 100)
     private String alias;
 }
